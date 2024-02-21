@@ -1,8 +1,12 @@
-from models import Dealer
+from models import Dealer, Engine
 
 
 def main() -> None:
-    dealer = Dealer(4)
+    engine = Engine()
+
+    results = engine.run_simulation(10, 4)
+
+    print(results)
 
 
 if __name__ == "__main__":

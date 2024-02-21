@@ -1,0 +1,28 @@
+{
+    "editor.suggestSelection": "first",
+    "python.languageServer": "Default",
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter-notebook"
+    },
+    "editor.fontSize": 21,
+    "editor.fontFamily": "Fira Code",
+    "editor.fontLigatures": true,
+    "explorer.confirmDragAndDrop": false,
+    "workbench.colorTheme": "Tokyo Night",
+    "materialTheme.accent": "Cyan",
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": [
+        "-l 88"
+    ],
+    "editor.formatOnSave": true,
+    "terminal.integrated.fontSize": 18,
+    "terminal.integrated.fontFamily": "DejaVu Sans Mono for Powerline",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true
+    },
+    "editor.codeActionsOnSave": {},
+    "editor.cursorBlinking": "smooth",
+    "editor.defaultFormatter": "ms-python.python",
+    "workbench.iconTheme": "ayu"
+}
