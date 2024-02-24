@@ -1,5 +1,6 @@
 from enum import Enum
 import random
+import itertools
 
 
 class CardValues(Enum):
@@ -43,15 +44,37 @@ class PokerHands(Enum):
     PAIR = 9, "Pair"
     HIGH_CARD = 10, "High card"
 
+    def __str__(self) -> str:
+        return self.value[1]
+
+    def __repr__(self) -> str:
+        return self.value[1]
+
+    def __hash__(self) -> int:
+        return self.value[0]
+
+    def __eq__(self, other) -> bool:
+        return self.value[0] == other.value[0]
+
+    def __lt__(self, other) -> bool:
+        return self.value[0] < other.value[0]
+
+    def __gt__(self, other) -> bool:
+        return self.value[0] > other.value[0]
+
 
 class Card:
-    def __init__(self, value: CardValues = None, symbol: CardSymbols = None):
+    def __init__(self, value: CardValues, symbol: CardSymbols = None):
         self._value = value
         self._symbol = symbol
 
     @property
     def value(self) -> int:
-        return int(self._value.value[1])
+        return int(self._value.value[0])
+
+    @property
+    def value_verbose(self) -> str:
+        return self._value.value[1]
 
     @property
     def symbol(self) -> CardSymbols:
@@ -73,10 +96,10 @@ class Card:
         return self.value - other.value
 
     def __str__(self) -> str:
-        return f"{self.value}{self._symbol.value[1]}"
+        return f"{self.value_verbose}{self._symbol.value[1]}"
 
     def __repr__(self) -> str:
-        return f"{self.value}{self._symbol.value[1]}"
+        return f"{self.value_verbose}{self._symbol.value[1]}"
 
 
 class Deck:
@@ -101,7 +124,7 @@ class Dealer:
     def deal_cards(self, no_players: int) -> list[tuple]:
         players = []
 
-        for _ in range(self._no_players):
+        for _ in range(no_players):
             players.append([self.deck.draw()])
 
         for player in players:
@@ -126,12 +149,82 @@ class Dealer:
     def shuffle_deck(self) -> None:
         self._deck = Deck()
 
-    def check_hand(self, hand: list[tuple]) -> PokerHands:
-        pass
+    def _is_straight(self, cards: list[tuple]) -> bool:
+        if cards[0] == Card(CardValues.ACE) and cards[1] == Card(CardValues.FIVE):
+            for index in range(1, 4):
+                if cards[index] - cards[index + 1] > 1:
+                    return False
 
-    @property
-    def table(self) -> dict:
-        return {"players": self.players, "table": self._table_cards}
+            return True
+
+        for index in range(4):
+            if cards[index] - cards[index + 1] > 1:
+                return False
+
+        return True
+
+    def _is_same_symbol_combination(self, cards: list[tuple]) -> bool:
+        for card in cards:
+            if card.symbol != cards[0].symbol:
+                return False
+
+        return True
+
+    def _get_duplicate_cards(self, cards: list[tuple]) -> dict:
+        duplicates = {}
+
+        for card in cards:
+            if card.value not in duplicates:
+                duplicates[card.value] = 0
+
+            duplicates[card.value] += 1
+
+        return duplicates
+
+    def check_hand(self, hand: list[tuple]) -> PokerHands:
+        cards = hand + self._table_cards
+        cards.sort(reverse=True)
+
+        best_combinations = []
+
+        for combination in itertools.combinations(cards, 5):
+            # TODO: move this into a method
+            # we shouldn't check all the possible hands for each
+            # combination(stop at the best one we've found for
+            # a combination and the just compare the best from each)
+
+            if self._is_straight(combination):
+                best_combinations.append(PokerHands.STRAIGHT)
+
+                if self._is_same_symbol_combination(combination):
+                    if combination[-1] == Card(CardValues.TEN):
+                        return PokerHands.ROYAL_FLUSH
+
+                    best_combinations.append(PokerHands.STRAIGHT_FLUSH)
+
+            if (
+                list(combination).count(combination[0]) == 4
+                or list(combination).count(combination[1]) == 4
+            ):
+                best_combinations.append(PokerHands.FOUR_OF_A_KIND)
+
+            if self._is_same_symbol_combination(combination):
+                best_combinations.append(PokerHands.FLUSH)
+
+            duplicates = self._get_duplicate_cards(combination)
+
+            if 2 in duplicates.values() and 3 in duplicates.values():
+                best_combinations.append(PokerHands.FULL_HOUSE)
+            elif 3 in duplicates.values():
+                best_combinations.append(PokerHands.THREE_OF_A_KIND)
+            elif list(duplicates.values()).count(2) == 2:
+                best_combinations.append(PokerHands.TWO_PAIR)
+            elif 2 in duplicates.values():
+                best_combinations.append(PokerHands.PAIR)
+            else:
+                best_combinations.append(PokerHands.HIGH_CARD)
+
+        return min(best_combinations)
 
     @property
     def deck(self) -> Deck:
@@ -140,6 +233,10 @@ class Dealer:
     @property
     def players(self) -> list[tuple]:
         return self._players
+
+    @property
+    def table_cards(self) -> list[tuple]:
+        return self._table_cards
 
 
 class Engine:
@@ -152,17 +249,16 @@ class Engine:
 
         dealer.deal_table_cards()
 
-        result = {player: dealer.check_hand(player) for player in players}
-
-        result.update({"table": dealer.table})
-
-        return result
+        return [dealer.check_hand(player) for player in players]
 
     def run_simulation(self, iterations: int, no_players: int) -> None:
-        results = []
+        results = {poker_hand: 0 for poker_hand in PokerHands}
         for index in range(iterations):
-            sim_no = index + 1
+            iteration = index + 1
 
-            results.append(self.simulate_hand(no_players))
+            result = self.simulate_hand(no_players)
+
+            for poker_hand in result:
+                results[poker_hand] += 1
 
         return results

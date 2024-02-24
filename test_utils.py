@@ -13,7 +13,7 @@ def test_royal_flush():
     ]
 
     hand = [
-        Card(CardValues.QUEEN, CardValues.HEARTS),
+        Card(CardValues.QUEEN, CardSymbols.HEARTS),
         Card(CardValues.NINE, CardSymbols.HEARTS),
     ]
 
@@ -120,6 +120,27 @@ def test_straight():
     hand = [
         Card(CardValues.SIX, CardSymbols.SPADES),
         Card(CardValues.SIX, CardSymbols.CLUBS),
+    ]
+
+    dealer._table_cards = table_cards
+
+    assert dealer.check_hand(hand) == PokerHands.STRAIGHT
+
+
+def test_ace_low_straight():
+    dealer = Dealer()
+
+    table_cards = [
+        Card(CardValues.FIVE, CardSymbols.SPADES),
+        Card(CardValues.TEN, CardSymbols.DIAMONDS),
+        Card(CardValues.FOUR, CardSymbols.HEARTS),
+        Card(CardValues.TWO, CardSymbols.DIAMONDS),
+        Card(CardValues.NINE, CardSymbols.SPADES),
+    ]
+
+    hand = [
+        Card(CardValues.ACE, CardSymbols.SPADES),
+        Card(CardValues.THREE, CardSymbols.CLUBS),
     ]
 
     dealer._table_cards = table_cards
