@@ -1,6 +1,7 @@
 from enum import Enum
 import random
 import itertools
+from tqdm import tqdm
 
 
 class CardValues(Enum):
@@ -251,14 +252,19 @@ class Engine:
 
         return [dealer.check_hand(player) for player in players]
 
-    def run_simulation(self, iterations: int, no_players: int) -> None:
+    def run_simulation(
+        self, iterations: int, no_players: int, winners_only: bool = False
+    ) -> dict:
         results = {poker_hand: 0 for poker_hand in PokerHands}
-        for index in range(iterations):
-            iteration = index + 1
+        for index in tqdm(range(iterations)):
+            # iteration = index + 1
 
             result = self.simulate_hand(no_players)
 
-            for poker_hand in result:
-                results[poker_hand] += 1
+            if winners_only:
+                results[min(result)] += 1
+            else:
+                for poker_hand in result:
+                    results[poker_hand] += 1
 
         return results
