@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "poker-stats"
+version = "1.0.0"
+description = "App that produces statistics on poker hands simulations"
+authors = ["Dragos Gheorghiu <dragos.c.gheorghiu@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.7"
+tqdm = "^4.66.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+pytest = "^8.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
